@@ -1,6 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Group } from 'src/app/interface/interface';
+import { Component, computed, inject, input, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ApiService } from 'src/app/service/api.service';
 import { ButtonModule } from 'primeng/button';
 import { DecimalPipe } from '@angular/common';
@@ -17,59 +16,77 @@ import { InputTextModule } from 'primeng/inputtext';
 })
 export class GroupComponent {
 
-  apiService = inject(ApiService)
-  route = inject(ActivatedRoute)
-  utilService = inject(UtilService)
+  private readonly apiService = inject(ApiService);
+  private readonly utilService = inject(UtilService);
 
-  groupId = this.route.snapshot.paramMap.get('groupId') as string
-  group: Group | undefined
-  stats: { from: string, to: string, amount: number }[] = []
-  memberMap: { [key: string]: string } = {}
+  // Router component input binding for :groupId
+  readonly groupId = input.required<string>();
 
-  deleteExpenseId: string = ''
+  // Reactive group derived from groups signal
+  readonly group = computed(() => {
+    const id = this.groupId();
+    return this.apiService.groups().find(g => g.id === id);
+  });
 
-  memberDialog: boolean = false
-  memberForm = new FormGroup({
+  // Reactive member map derived from group members
+  readonly memberMap = computed<Record<string, string>>(() => {
+    const g = this.group();
+    if (!g) return {};
+    const map: Record<string, string> = {};
+    for (const member of g.members) {
+      map[member.id] = member.name;
+    }
+    return map;
+  });
+
+  // Reactive settlements automatically recomputed when group or expenses change
+  readonly settlements = computed(() => {
+    const g = this.group();
+    if (!g) return [];
+    const rawSettlements = this.apiService.computeSettlements(g);
+    const map = this.memberMap();
+    return rawSettlements.map(item => ({
+      from: map[item.from] || item.from,
+      to: map[item.to] || item.to,
+      amount: item.amount
+    }));
+  });
+
+  deleteExpenseId = signal<string>('');
+  memberDialog = signal<boolean>(false);
+
+  readonly memberForm = new FormGroup({
     id: new FormControl<string | null>(null, Validators.required),
     name: new FormControl<string | null>(null, Validators.required)
-  })
+  });
 
-  ngOnInit(): void {
-    this.getData()
+  openEditMember(id: string, name: string): void {
+    this.memberForm.patchValue({ id, name });
+    this.memberDialog.set(true);
   }
 
-  getData = () => {
-    this.group = this.apiService.getGroup(this.groupId)
-    this.memberMap = {}
-    this.group.members.forEach(member => this.memberMap[member.id] = member.name)
-    this.stats = this.apiService.getSettlements(this.group)
-    this.stats.forEach(settlement => {
-      settlement.from = this.memberMap[settlement.from]
-      settlement.to = this.memberMap[settlement.to]
-    })
-  }
-
-  deleteExpenseConfirmPopup(event: Event, expenseId: string) {
-    this.deleteExpenseId = expenseId
+  deleteExpenseConfirmPopup(event: Event, expenseId: string): void {
+    this.deleteExpenseId.set(expenseId);
     this.utilService.confirmDialog(
       event,
       "Delete expense?",
       "Are you sure you want to delete the expense?",
       this.deleteExpense
-    )
+    );
   }
 
-  saveMember = () => {
-    if (this.memberForm.invalid) return
-    const form = this.memberForm.getRawValue()
-    this.apiService.updateMemberName(form.name || '', this.groupId, form.id || '')
-    this.getData()
-    this.memberDialog = false
+  saveMember(): void {
+    if (this.memberForm.invalid) return;
+    const form = this.memberForm.getRawValue();
+    this.apiService.updateMemberName(form.name || '', this.groupId(), form.id || '');
+    this.memberDialog.set(false);
   }
 
-  private deleteExpense = () => {
-    this.apiService.deleteExpense(this.deleteExpenseId, this.groupId)
-    this.getData()
-  }
-
+  private deleteExpense = (): void => {
+    const expId = this.deleteExpenseId();
+    if (expId) {
+      this.apiService.deleteExpense(expId, this.groupId());
+    }
+  };
 }
+

@@ -1,32 +1,34 @@
 <div class="container mx-auto p-4">
-
+    @if (group(); as currentGroup) {
     <div class="flex gap-2 mb-4">
         <div class="cursor-pointer text-gray-500" routerLink="/dashboard">Groups</div>
         <div class="text-gray-500">/</div>
-        <div>{{group!.name}}</div>
+        <div>{{currentGroup.name}}</div>
     </div>
 
     <div class="flex items-center justify-between mb-4">
-        <div class="text-2xl">{{group!.name}}</div>
-        <p-button icon="pi pi-plus" label="Add Expense" [routerLink]="'/dashboard/'+groupId+'/add-expense'" />
+        <div class="text-2xl">{{currentGroup.name}}</div>
+        <p-button icon="pi pi-plus" label="Add Expense" [routerLink]="'/dashboard/' + groupId() + '/add-expense'" />
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-10 gap-4">
         <div class="flex flex-col lg:col-span-6">
             <div class="text-xl">Expenses</div>
             <div class="flex flex-col gap-2 mt-3">
-                @for(expense of group!.expenses; track expense.id) {
+                @for(expense of currentGroup.expenses; track expense.id) {
                 <div class="rounded-lg bg-surface-0 border border-gray-300 py-1 px-3">
                     <div class="flex">
                         <div class="mr-auto">{{expense.description}}</div>
                         <div>{{expense.amount | number: '1.2-2'}}</div>
                     </div>
                     <div class="flex items-center">
-                        <small class="mr-auto text-gray-500">Paid by {{memberMap[expense.paidBy]}} &middot; Split between {{expense.shares.length}}</small>
-                        <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" [routerLink]="'/dashboard/'+groupId+'/'+expense.id" />
+                        <small class="mr-auto text-gray-500">Paid by {{memberMap()[expense.paidBy] || 'Unknown'}} &middot; Split between {{expense.shares.length}}</small>
+                        <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" [routerLink]="'/dashboard/' + groupId() + '/' + expense.id" />
                         <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" (click)="deleteExpenseConfirmPopup($event, expense.id)" />
                     </div>
                 </div>
+                } @empty {
+                <div class="text-gray-500 py-4">No expenses added yet.</div>
                 }
             </div>
         </div>
@@ -35,31 +37,39 @@
                 <div class="text-xl">Members</div>
             </div>
             <div class="rounded-lg bg-surface-0 border border-gray-300 p-3 mt-3">
-                @for (member of group!.members; track $index) {
+                @for (member of currentGroup.members; track member.id) {
                 <div class="flex items-center">
                     <span class="mr-auto">{{ member.name }}</span>
-                    <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (click)="memberForm.patchValue({ id: member.id, name: member.name }); memberDialog=true" />
+                    <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (click)="openEditMember(member.id, member.name)" />
                 </div>
                 }
             </div>
 
             <div class="text-xl mt-3">Settlements</div>
             <div class="rounded-lg bg-surface-0 border border-gray-300 p-3 mt-3">
-                @for (item of stats; track $index) {
+                @for (item of settlements(); track item.from + item.to) {
                 <div class="flex items-center">
                     <span class="w-20">{{ item.from }}</span>
                     <i class="pi pi-arrow-right mx-4"></i>
                     <span>{{ item.to }}</span>
                     <span class="ml-auto">{{ item.amount | number: '1.2-2' }}</span>
                 </div>
+                } @empty {
+                <div class="text-gray-500">All balances are settled up!</div>
                 }
             </div>
         </div>
     </div>
+    } @else {
+    <div class="text-center py-12">
+        <p class="text-xl text-gray-500">Group not found</p>
+        <p-button label="Back to Groups" routerLink="/dashboard" class="mt-4" />
+    </div>
+    }
 
 </div>
 
-<p-dialog header="Edit Member" [modal]="true" [(visible)]="memberDialog" [style]="{ width: '25rem' }" (onHide)="memberForm.reset()" [formGroup]="memberForm">
+<p-dialog header="Edit Member" [modal]="true" [visible]="memberDialog()" (visibleChange)="memberDialog.set($event)" [style]="{ width: '25rem' }" (onHide)="memberForm.reset()" [formGroup]="memberForm">
     @if(memberForm.controls.id.value) {
         <span class="block mb-8">Edit person in your expense group.</span>
     } @else {
@@ -70,7 +80,7 @@
         <input pInputText class="flex-auto" autocomplete="off" formControlName="name" />
     </div>
     <div class="flex justify-end gap-2">
-        <p-button label="Cancel" severity="secondary" (click)="memberDialog = false" />
+        <p-button label="Cancel" severity="secondary" (click)="memberDialog.set(false)" />
         <p-button label="Save" [disabled]="memberForm.invalid" (click)="saveMember()" />
     </div>
-</p-dialog>
+</p-dialog>

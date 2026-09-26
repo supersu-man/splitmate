@@ -1,7 +1,7 @@
 <div class="container mx-auto p-4" [formGroup]="expenseForm">
 
     <div class="flex flex-col mb-4">
-        <div class="text-2xl">{{expenseId? 'Edit the expense' : 'Add a new expense'}}</div>
+        <div class="text-2xl">{{expenseId()? 'Edit the expense' : 'Add a new expense'}}</div>
         <div class="text-gray-500">Enter the details of the expense and select who to split it with.</div>
     </div>
 
@@ -25,7 +25,7 @@
     <div class="flex flex-col rounded-lg bg-surface-0 border border-gray-300 p-4 mb-4">
         <div class="flex flex-col gap-2 mb-4">
             <label>Paid by</label>
-            <p-select [options]="members" optionLabel="name" optionValue="id" placeholder="Select member" formControlName="paidBy"></p-select>
+            <p-select [options]="members()" optionLabel="name" optionValue="id" placeholder="Select member" formControlName="paidBy"></p-select>
         </div>
         <div class="flex flex-col gap-2">
             <div class="flex justify-between">
@@ -33,9 +33,9 @@
                 <div class="text-primary cursor-pointer" (click)="selectAll()">Select all</div>
             </div>
             <div class="grid gap-2 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
-                @for (member of members; track $index) {
-                <div class="flex items-center rounded-lg border gap-2 p-2 px-3 cursor-pointer" (click)="member.included = !member.included; setShares()" [class]="member.included ? 'bg-primary-100 border-primary' : 'border-gray-300'">
-                    <p-checkbox class="mt-1" [binary]="true" [(ngModel)]="member.included" [ngModelOptions]="{standalone: true}" (onChange)="setShares()" (click)="$event.stopPropagation()" />
+                @for (member of members(); track member.id) {
+                <div class="flex items-center rounded-lg border gap-2 p-2 px-3 cursor-pointer" (click)="toggleMember(member.id)" [class]="member.included ? 'bg-primary-100 border-primary' : 'border-gray-300'">
+                    <p-checkbox class="mt-1" [binary]="true" [ngModel]="member.included" [ngModelOptions]="{standalone: true}" (ngModelChange)="setMemberIncluded(member.id, $event)" (click)="$event.stopPropagation()" />
                     <div>{{member.name}}</div>
                 </div>
                 }
@@ -50,7 +50,7 @@
             @for (share of shares.controls; track $index) {
                 <div class="grid grid-cols-1 lg:grid-cols-10 gap-4 rounded-lg border border-gray-300 p-3" [formGroupName]="$index">
                     <div class="flex items-center justify-between lg:col-span-6">
-                        <div>{{memberNameMap.get(share.value.id || '')}}</div>
+                        <div>{{memberNameMap().get(share.value.id || '')}}</div>
                         <div>{{share.value.amount | number: '1.2-2'}}</div>
                     </div>
                     <div class="flex items-center lg:col-span-4 gap-4">
@@ -64,8 +64,8 @@
     </div>
 
     <div class="flex justify-end gap-2">
-        <p-button [routerLink]="'/dashboard/'+groupId" variant="text" label="Cancel"></p-button>
-        <p-button (click)="addExpense()" [label]="expenseId? 'Save expense' : 'Add expense'" [disabled]="expenseForm.invalid || !atleastOneMemberIncluded()"></p-button>
+        <p-button [routerLink]="'/dashboard/' + groupId()" variant="text" label="Cancel"></p-button>
+        <p-button (click)="addExpense()" [label]="expenseId()? 'Save expense' : 'Add expense'" [disabled]="expenseForm.invalid || !atleastOneMemberIncluded()"></p-button>
     </div>
 
-</div>
+</div>

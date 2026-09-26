@@ -19,3 +19,9 @@ export interface Expense {
     date: Date,
     shares: { id: string, amount: number, share: number, fixed: boolean }[]
 }
+
+export interface Settlement {
+    from: string
+    to: string
+    amount: number
+}

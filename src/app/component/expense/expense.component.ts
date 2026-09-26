@@ -1,6 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
@@ -19,6 +19,11 @@ interface ShareForm {
   fixed: FormControl<boolean | null>;
 }
 
+interface MemberSelectable {
+  id: string;
+  name: string;
+  included: boolean;
+}
 
 @Component({
   selector: 'app-expense',
@@ -26,81 +31,128 @@ interface ShareForm {
   templateUrl: './expense.component.html',
   styles: ``
 })
-export class ExpenseComponent {
+export class ExpenseComponent implements OnInit {
 
-  apiService = inject(ApiService)
-  route = inject(ActivatedRoute)
-  router = inject(Router)
+  private readonly apiService = inject(ApiService);
+  private readonly router = inject(Router);
 
-  groupId = this.route.snapshot.paramMap.get('groupId') as string
-  expenseId = this.route.snapshot.paramMap.get('expenseId') as string | null
+  // Inputs bound automatically from route params
+  readonly groupId = input.required<string>();
+  readonly expenseId = input<string | null>(null);
 
-  expenseForm = new FormGroup({
+  // Reactive group lookup
+  readonly currentGroup = computed(() => {
+    return this.apiService.groups().find(g => g.id === this.groupId());
+  });
+
+  // Reactive member name map
+  readonly memberNameMap = computed<Map<string, string>>(() => {
+    const map = new Map<string, string>();
+    const g = this.currentGroup();
+    if (g) {
+      g.members.forEach(m => map.set(m.id, m.name));
+    }
+    return map;
+  });
+
+  // Local signal for members inclusion in this expense
+  readonly members = signal<MemberSelectable[]>([]);
+
+  // Computed helper for checking at least one member selected
+  readonly atleastOneMemberIncluded = computed(() => {
+    return this.members().some(x => x.included);
+  });
+
+  readonly expenseForm = new FormGroup({
     id: new FormControl<string | null>(null),
     amount: new FormControl<number | null>(null, [Validators.required, Validators.min(0.01)]),
     description: new FormControl<string | null>(null, Validators.required),
     paidBy: new FormControl<string | null>(null, Validators.required),
     date: new FormControl<Date | null>(new Date(), Validators.required),
     shares: new FormArray<FormGroup<ShareForm>>([]),
-  })
+  });
 
   get shares(): FormArray<FormGroup<ShareForm>> {
     return this.expenseForm.get('shares') as FormArray<FormGroup<ShareForm>>;
   }
 
-  members: { id: string, name: string, included: boolean }[] = []
-  memberNameMap: Map<string, string> = new Map<string, string>()
-
   ngOnInit(): void {
-    const group = this.apiService.getGroup(this.groupId)
-    this.members = group.members.map((member) => ({ ...member, included: false }))
-    this.members.forEach(member => {
-      this.memberNameMap.set(member.id, member.name)
-    })
-    if (this.expenseId) {
-      const expense = this.apiService.getExpense(this.groupId, this.expenseId)
-      expense.date = new Date(expense.date)
-      this.members.forEach(member => {
-        const share = expense.shares.find(s => s.id === member.id)
-        member.included = share !== undefined
-      })
-      const controls = expense.shares.map(share =>
-        new FormGroup<ShareForm>({
-          id: new FormControl<string>(share.id),
-          share: new FormControl<number>(share.share),
-          amount: new FormControl<number>(share.amount),
-          fixed: new FormControl<boolean>(share.fixed),
-        })
-      );
-      this.expenseForm.patchValue(expense)
-      this.expenseForm.setControl('shares', new FormArray(controls));
+    const group = this.currentGroup() || this.apiService.getGroup(this.groupId());
+    if (!group) return;
+
+    const initialMembers: MemberSelectable[] = group.members.map(m => ({ ...m, included: false }));
+    const currentExpId = this.expenseId();
+
+    if (currentExpId) {
+      const expense = this.apiService.getExpense(this.groupId(), currentExpId);
+      if (expense) {
+        const clonedExpense = {
+          ...expense,
+          date: new Date(expense.date)
+        };
+
+        initialMembers.forEach(member => {
+          member.included = expense.shares.some(s => s.id === member.id);
+        });
+
+        const controls = expense.shares.map(share =>
+          new FormGroup<ShareForm>({
+            id: new FormControl<string>(share.id),
+            share: new FormControl<number>(share.share),
+            amount: new FormControl<number>(share.amount),
+            fixed: new FormControl<boolean>(share.fixed),
+          })
+        );
+
+        this.expenseForm.patchValue(clonedExpense);
+        this.expenseForm.setControl('shares', new FormArray(controls));
+      }
     }
+
+    this.members.set(initialMembers);
   }
 
-  selectAll = () => {
-    this.members.forEach(member => member.included = true)
-    this.setShares()
+  toggleMember(id: string): void {
+    this.members.update(list =>
+      list.map(m => m.id === id ? { ...m, included: !m.included } : m)
+    );
+    this.setShares();
   }
 
-  atleastOneMemberIncluded = (): boolean => {
-    return this.members.some(x => x.included)
+  setMemberIncluded(id: string, included: boolean): void {
+    this.members.update(list =>
+      list.map(m => m.id === id ? { ...m, included } : m)
+    );
+    this.setShares();
   }
 
-  addExpense = () => {
-    const form = this.expenseForm.getRawValue() as Expense
-    const id = form.id
+  selectAll = (): void => {
+    this.members.update(list => list.map(m => ({ ...m, included: true })));
+    this.setShares();
+  };
+
+
+  addExpense = (): void => {
+    const form = this.expenseForm.getRawValue() as Expense;
+    const id = form.id;
+    const gid = this.groupId();
     if (id) {
-      this.apiService.updateExpense(form, this.groupId)
+      this.apiService.updateExpense(form, gid);
     } else {
-      this.apiService.addExpense(form, this.groupId)
+      this.apiService.addExpense(form, gid);
     }
-    this.router.navigate(['/dashboard', this.groupId])
-  }
+    this.router.navigate(['/dashboard', gid]);
+  };
 
-  setShares() {
+  setShares(): void {
     const form = this.expenseForm.getRawValue();
     const amount = form.amount || 0;
-    const included = this.members.filter(x => x.included);
+    const included = this.members().filter(x => x.included);
+
+    if (included.length === 0) {
+      this.expenseForm.setControl('shares', new FormArray<FormGroup<ShareForm>>([]));
+      return;
+    }
 
     const controls = included.map(member =>
       new FormGroup<ShareForm>({
@@ -114,6 +166,7 @@ export class ExpenseComponent {
     const newArray = new FormArray<FormGroup<ShareForm>>(controls);
     this.expenseForm.setControl('shares', newArray);
   }
+
 
   updateShares(index: number): void {
     const amount = this.expenseForm.getRawValue().amount ?? 0;

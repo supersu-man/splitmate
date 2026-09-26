@@ -11,7 +11,7 @@
     </div>
 
     <div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
-        @for (item of groups; track $index) {
+        @for (item of groups(); track item.id) {
         <div class="h-80 rounded-lg shadow-sm bg-surface-0 overflow-hidden">
             <div class="h-50 bg-center bg-cover" [style]="'background-image: url(assets/thumbnails/'+ item.thumbnail +');'"></div>
             <div class="h-30 flex flex-col p-3">
@@ -26,7 +26,7 @@
         }
     </div>
 
-    @if (groups.length == 0) {
+    @if (groups().length == 0) {
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">Add group to get started</div>
     }
 </div>

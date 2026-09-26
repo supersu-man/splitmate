@@ -1,5 +1,5 @@
-import { ApplicationConfig } from "@angular/core";
-import { provideRouter } from "@angular/router";
+import { ApplicationConfig, provideZonelessChangeDetection } from "@angular/core";
+import { provideRouter, withComponentInputBinding } from "@angular/router";
 import { ConfirmationService, MessageService } from "primeng/api";
 import { routes } from './app.routes';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -27,7 +27,8 @@ const MyPreset = definePreset(Aura, {
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),
+    provideZonelessChangeDetection(),
+    provideRouter(routes, withComponentInputBinding()),
     provideAnimations(), 
     providePrimeNG({
       theme: { preset: MyPreset , options: { darkModeSelector: false }} 
@@ -36,3 +37,4 @@ export const appConfig: ApplicationConfig = {
     ConfirmationService
   ]
 };
+
