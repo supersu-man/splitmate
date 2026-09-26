@@ -16,7 +16,7 @@ import { Group } from 'src/app/interface/interface';
 export class DashboardComponent implements OnInit {
 
   groups: Group[] = []
-  deleteSallyId: string = ''
+  deleteGroupId: string = ''
 
   apiService = inject(ApiService)
   utilService = inject(UtilService)
@@ -30,9 +30,9 @@ export class DashboardComponent implements OnInit {
     this.groups = this.apiService.getGroups()
   }
 
-  deleteSallyConfirmPopup(event: Event, id: string) {
+  deleteGroupConfirmPopup(event: Event, id: string) {
     event.stopPropagation()
-    this.deleteSallyId = id
+    this.deleteGroupId = id
     this.utilService.confirmDialog(
       event,
       "Delete group?",
@@ -42,7 +42,7 @@ export class DashboardComponent implements OnInit {
   }
 
   private deleteGroup = () => {
-    this.apiService.deleteGroup(this.deleteSallyId)
+    this.apiService.deleteGroup(this.deleteGroupId)
     this.getGroups()
     this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Deleted Group' })
   }

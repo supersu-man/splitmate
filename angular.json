@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "sally": {
+    "splitmate": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -73,10 +73,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "sally:build:production"
+              "buildTarget": "splitmate:build:production"
             },
             "development": {
-              "buildTarget": "sally:build:development"
+              "buildTarget": "splitmate:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -84,7 +84,7 @@
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n",
           "options": {
-            "buildTarget": "sally:build"
+            "buildTarget": "splitmate:build"
           }
         },
         "deploy": {

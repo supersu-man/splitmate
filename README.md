@@ -1,6 +1,6 @@
-# Sally
+# Splitmate
 
-Sally is a simple, lightweight trip expense splitter that helps groups fairly divide shared costs. Add members, track expenses, and instantly see who overpaid, who owes money, and how to settle up — all stored securely in your browser using Local Storage.
+Splitmate is a simple, lightweight trip expense splitter that helps groups fairly divide shared costs. Add members, track expenses, and instantly see who overpaid, who owes money, and how to settle up — all stored securely in your browser using Local Storage.
 
 No login.
 No backend.
@@ -53,8 +53,8 @@ Just fast, private, offline expense management.
 
 1. Clone the repository
 ```
-git clone https://github.com/supersu-man/sally.git
-cd sally
+git clone https://github.com/supersu-man/splitmate.git
+cd splitmate
 ```
 
 2. Install dependencies

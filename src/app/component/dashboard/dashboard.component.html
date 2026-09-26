@@ -1,8 +1,8 @@
 <div class="container mx-auto p-4">
 
     <div class="flex items-center gap-3 pb-4 h-14 cursor-pointer" routerLink="/">
-        <img src="assets/logo.png" width="28" alt="Sally Logo" class="logo" />
-        <div class="text-xl">Sally</div>
+        <img src="assets/logo.png" width="28" alt="Splitmate Logo" class="logo" />
+        <div class="text-xl">Splitmate</div>
     </div>
 
     <div class="flex justify-between items-center mb-4">
@@ -19,7 +19,7 @@
                 <div class="text-gray-500">{{item.members.length}} Members</div>
                 <div class="flex justify-around mt-auto">
                     <p-button label="View" variant="text" [routerLink]="'/dashboard/'+item.id"/>
-                    <p-button label="Delete" variant="text" severity="danger" (click)="deleteSallyConfirmPopup($event, item.id)" />
+                    <p-button label="Delete" variant="text" severity="danger" (click)="deleteGroupConfirmPopup($event, item.id)" />
                 </div>
             </div>
         </div>
