@@ -28,7 +28,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm i
-          npx ng deploy --cname=sally.sumanth.dev --name="Sumanth Perambuduri" --email=35676632+supersu-man@users.noreply.github.com --no-silent
+          npx ng deploy --cname=splitmate.sumanth.dev --name="Sumanth Perambuduri" --email=35676632+supersu-man@users.noreply.github.com --no-silent
       
       - name: Build Changelog
         if: ${{ steps.regex-match.outputs.match != '' }}
