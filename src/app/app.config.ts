@@ -5,7 +5,7 @@ import { routes } from './app.routes';
 import Aura from '@primeuix/themes/aura';
 import { providePrimeNG } from "primeng/config";
 import { definePreset } from "@primeuix/themes";
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { provideClientHydration, withEventReplay, withNoIncrementalHydration } from '@angular/platform-browser';
 
 const MyPreset = definePreset(Aura, {
   semantic: {
@@ -33,7 +33,7 @@ export const appConfig: ApplicationConfig = {
       theme: { preset: MyPreset , options: { darkModeSelector: false }} 
     }),
     MessageService,
-    ConfirmationService, provideClientHydration(withEventReplay())
+    ConfirmationService, provideClientHydration(withEventReplay(), withNoIncrementalHydration())
   ]
 };
 
