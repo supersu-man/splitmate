@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Deploy to GitHub Pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npx ng deploy --cname=splitmate.sumanth.dev --name="Sumanth Perambuduri" --email=35676632+supersu-man@users.noreply.github.com --no-silent
+
+      - name: Package Release Bundle
+        run: |
+          tar -czf splitmate-${{ github.ref_name }}.tar.gz -C dist .
+
+      - name: Build Changelog
+        id: changelog
+        uses: ardalanamini/auto-changelog@v5
+        with:
+          mention-authors: false
+          mention-new-contributors: false
+          include-compare: false
+          semver: false
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "splitmate-${{ github.ref_name }}.tar.gz"
+          body: ${{ steps.changelog.outputs.changelog }}
+          tag: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
