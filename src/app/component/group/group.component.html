@@ -6,9 +6,22 @@
         <div>{{currentGroup.name}}</div>
     </div>
 
-    <div class="flex items-center justify-between mb-4">
-        <div class="text-2xl">{{currentGroup.name}}</div>
-        <p-button icon="pi pi-plus" label="Add Expense" [routerLink]="'/dashboard/' + groupId() + '/add-expense'" />
+    <div class="relative h-44 sm:h-52 w-full bg-center bg-cover rounded-xl overflow-hidden mb-6 shadow-sm border border-gray-200"
+         [style]="'background-image: url(assets/thumbnails/' + (currentGroup.thumbnail || 'thumbnail_1.jpg') + ')'">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 flex flex-col justify-between p-4 sm:p-6">
+            <div class="flex justify-end">
+                <p-button icon="pi pi-pencil" label="Edit Group" [rounded]="true" severity="secondary" size="small" (click)="openEditGroup()" />
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">{{currentGroup.name}}</h1>
+                    </div>
+                    <p class="text-white/80 text-sm mt-1">{{currentGroup.members.length}} Members &middot; {{currentGroup.expenses.length}} Expenses</p>
+                </div>
+                <p-button icon="pi pi-plus" label="Add Expense" [routerLink]="'/dashboard/' + groupId() + '/add-expense'" />
+            </div>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-10 gap-4">
@@ -83,4 +96,6 @@
         <p-button label="Cancel" severity="secondary" (click)="memberDialog.set(false)" />
         <p-button label="Save" [disabled]="memberForm.invalid" (click)="saveMember()" />
     </div>
-</p-dialog>
+</p-dialog>
+
+<app-edit-group [(visible)]="editGroupDialog" [group]="group() ?? null" />

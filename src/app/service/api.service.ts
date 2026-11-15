@@ -83,10 +83,11 @@ export class ApiService {
     return id;
   }
 
-  updateGroupName(id: string, name: string): void {
+  updateGroupDetails(id: string, name: string, thumbnail: string): void {
+    const trimmed = name.trim();
     this._groups.update(groups =>
       groups.map(group =>
-        group.id === id ? { ...group, name } : group
+        group.id === id ? { ...group, name: trimmed, thumbnail } : group
       )
     );
   }

@@ -31,10 +31,16 @@
 
         <div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(140px,1fr))] mt-3">
             @for (thumbnail of thumbnails; track $index) {
-            <div [class]="groupForm.controls.thumbnail.value==thumbnail ? 'border-primary' : 'border-gray-300'"
-                class="h-30 bg-center bg-cover rounded-lg border-2"
+            <div [class]="groupForm.controls.thumbnail.value==thumbnail ? 'border-primary ring-2 ring-primary/40' : 'border-gray-300'"
+                class="relative h-30 bg-center bg-cover rounded-lg border-2 cursor-pointer transition-all hover:opacity-90"
                 [style]="'background-image: url(assets/thumbnails/'+thumbnail+')'"
-                (click)="groupForm.patchValue({thumbnail: thumbnail})"></div>
+                (click)="groupForm.patchValue({thumbnail: thumbnail})">
+                @if (groupForm.controls.thumbnail.value==thumbnail) {
+                <div class="absolute top-2 right-2 bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center shadow">
+                    <i class="pi pi-check" style="font-size: 0.65rem;"></i>
+                </div>
+                }
+            </div>
             }
         </div>
 

@@ -1,0 +1,46 @@
+<p-dialog 
+    header="Edit Group Details" 
+    [modal]="true" 
+    [visible]="visible()" 
+    (visibleChange)="visible.set($event)" 
+    [style]="{ width: '32rem', maxWidth: '95vw' }" 
+    (onHide)="cancel()" 
+    [formGroup]="editForm">
+
+    <div class="text-gray-500 mb-4">Update your group's name and cover photo.</div>
+
+    <div class="flex flex-col gap-2 mb-4">
+        <label for="edit-group-name" class="font-medium">Group Name</label>
+        <input id="edit-group-name" pInputText formControlName="name" placeholder="e.g. Italy Vacation '24" autocomplete="off" />
+        @if (editForm.controls.name.touched && editForm.controls.name.invalid) {
+            <small class="text-red-500">Group name is required.</small>
+        }
+    </div>
+
+    <div class="flex flex-col gap-2 mb-2">
+        <label class="font-medium">Cover Photo</label>
+        <div class="grid gap-3 grid-cols-3">
+            @for (thumbnail of thumbnails; track thumbnail) {
+            <div 
+                class="relative h-20 bg-center bg-cover rounded-lg border-2 cursor-pointer transition-all hover:opacity-90"
+                [class]="editForm.controls.thumbnail.value === thumbnail ? 'border-primary ring-2 ring-primary/40' : 'border-gray-200'"
+                [style]="'background-image: url(assets/thumbnails/' + thumbnail + ')'"
+                (click)="selectThumbnail(thumbnail)">
+                @if (editForm.controls.thumbnail.value === thumbnail) {
+                <div class="absolute top-1.5 right-1.5 bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center shadow">
+                    <i class="pi pi-check" style="font-size: 0.65rem;"></i>
+                </div>
+                }
+            </div>
+            }
+        </div>
+        @if (editForm.controls.thumbnail.touched && editForm.controls.thumbnail.invalid) {
+            <small class="text-red-500">Cover photo is required.</small>
+        }
+    </div>
+
+    <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-gray-200">
+        <p-button label="Cancel" severity="secondary" (click)="cancel()" />
+        <p-button label="Save Changes" [disabled]="editForm.invalid" (click)="save()" />
+    </div>
+</p-dialog>

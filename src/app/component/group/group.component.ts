@@ -7,10 +7,11 @@ import { UtilService } from 'src/app/service/util.service';
 import { DialogModule } from 'primeng/dialog';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
+import { EditGroupComponent } from '../edit-group/edit-group.component';
 
 @Component({
   selector: 'app-group',
-  imports: [RouterLink, ButtonModule, DecimalPipe, DialogModule, InputTextModule, ReactiveFormsModule],
+  imports: [RouterLink, ButtonModule, DecimalPipe, DialogModule, InputTextModule, ReactiveFormsModule, EditGroupComponent],
   templateUrl: './group.component.html',
   styles: ``
 })
@@ -54,11 +55,16 @@ export class GroupComponent {
 
   deleteExpenseId = signal<string>('');
   memberDialog = signal<boolean>(false);
+  editGroupDialog = signal<boolean>(false);
 
   readonly memberForm = new FormGroup({
     id: new FormControl<string | null>(null, Validators.required),
     name: new FormControl<string | null>(null, Validators.required)
   });
+
+  openEditGroup(): void {
+    this.editGroupDialog.set(true);
+  }
 
   openEditMember(id: string, name: string): void {
     this.memberForm.patchValue({ id, name });

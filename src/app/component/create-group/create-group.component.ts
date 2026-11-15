@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { Router, RouterLink } from "@angular/router";
 import { ApiService } from 'src/app/service/api.service';
 import { ChipModule } from 'primeng/chip';
+import { GROUP_THUMBNAILS } from 'src/app/interface/interface';
 
 @Component({
   selector: 'app-create-group',
@@ -18,14 +19,7 @@ export class CreateGroupComponent {
   apiService = inject(ApiService)
   router = inject(Router)
 
-  thumbnails = [
-    "thumbnail_1.jpg",
-    "thumbnail_2.jpg",
-    "thumbnail_3.jpg",
-    "thumbnail_4.jpg",
-    "thumbnail_5.jpg",
-    "thumbnail_6.jpg"
-  ]
+  thumbnails = GROUP_THUMBNAILS;
 
   groupForm = new FormGroup({
     name: new FormControl<string | null>(null, Validators.required),

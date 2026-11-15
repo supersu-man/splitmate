@@ -19,6 +19,7 @@
                 <div class="text-gray-500">{{item.members.length}} Members</div>
                 <div class="flex justify-around mt-auto">
                     <p-button label="View" variant="text" [routerLink]="'/dashboard/'+item.id"/>
+                    <p-button label="Edit" variant="text" (click)="openEditGroup($event, item)"/>
                     <p-button label="Delete" variant="text" severity="danger" (click)="deleteGroupConfirmPopup($event, item.id)" />
                 </div>
             </div>
@@ -29,4 +30,6 @@
     @if (groups().length == 0) {
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">Add group to get started</div>
     }
+
+    <app-edit-group [(visible)]="editGroupDialog" [group]="selectedGroupToEdit()" />
 </div>
