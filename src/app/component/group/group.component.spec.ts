@@ -1,5 +1,6 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Group } from '../../interface/interface';
 import { ApiService } from '../../service/api.service';
@@ -12,10 +13,11 @@ describe('GroupComponent', () => {
     members: [{ id: 'alice', name: 'Alice' }, { id: 'bob', name: 'Bob' }]
   };
   const api = {
-    groups: signal<Group[]>([group]), updateMemberName: vi.fn(), deleteExpense: vi.fn(),
+    groups: signal<Group[]>([group]), updateMemberName: vi.fn(), deleteExpense: vi.fn(), duplicateGroup: vi.fn(() => 'copy'),
     computeSettlements: vi.fn(() => [{ from: 'bob', to: 'alice', amount: 15 }])
   };
   const util = { confirmDialog: vi.fn() };
+  const router = { navigate: vi.fn() };
   let fixture: ComponentFixture<GroupComponent>;
   let component: GroupComponent;
 
@@ -23,7 +25,7 @@ describe('GroupComponent', () => {
     vi.clearAllMocks();
     api.groups.set([group]);
     await TestBed.configureTestingModule({ imports: [GroupComponent], providers: [
-      { provide: ApiService, useValue: api }, { provide: UtilService, useValue: util }
+      { provide: ApiService, useValue: api }, { provide: UtilService, useValue: util }, { provide: Router, useValue: router }
     ] }).overrideComponent(GroupComponent, { set: { template: '', imports: [] } }).compileComponents();
     fixture = TestBed.createComponent(GroupComponent);
     component = fixture.componentInstance;
@@ -60,5 +62,11 @@ describe('GroupComponent', () => {
     const accept = util.confirmDialog.mock.calls[0][3] as () => void;
     accept();
     expect(api.deleteExpense).toHaveBeenCalledWith('expense', 'group');
+  });
+
+  it('creates a group copy and navigates to it', () => {
+    component.duplicateGroup();
+    expect(api.duplicateGroup).toHaveBeenCalledWith('group');
+    expect(router.navigate).toHaveBeenCalledWith(['/dashboard', 'copy']);
   });
 });

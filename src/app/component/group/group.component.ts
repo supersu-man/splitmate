@@ -1,5 +1,5 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ApiService } from 'src/app/service/api.service';
 import { ButtonModule } from 'primeng/button';
 import { DecimalPipe } from '@angular/common';
@@ -19,6 +19,7 @@ export class GroupComponent {
 
   private readonly apiService = inject(ApiService);
   private readonly utilService = inject(UtilService);
+  private readonly router = inject(Router);
 
   // Router component input binding for :groupId
   readonly groupId = input.required<string>();
@@ -64,6 +65,11 @@ export class GroupComponent {
 
   openEditGroup(): void {
     this.editGroupDialog.set(true);
+  }
+
+  duplicateGroup(): void {
+    const id = this.apiService.duplicateGroup(this.groupId());
+    if (id) this.router.navigate(['/dashboard', id]);
   }
 
   openEditMember(id: string, name: string): void {

@@ -9,7 +9,8 @@
     <div class="relative h-44 sm:h-52 w-full bg-center bg-cover rounded-xl overflow-hidden mb-6 shadow-sm border border-gray-200"
          [style]="'background-image: url(assets/thumbnails/' + (currentGroup.thumbnail || 'thumbnail_1.jpg') + ')'">
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 flex flex-col justify-between p-4 sm:p-6">
-            <div class="flex justify-end">
+            <div class="flex justify-end gap-2">
+                <p-button icon="pi pi-copy" label="Duplicate Group" [rounded]="true" severity="secondary" size="small" (click)="duplicateGroup()" />
                 <p-button icon="pi pi-pencil" label="Edit Group" [rounded]="true" severity="secondary" size="small" (click)="openEditGroup()" />
             </div>
             <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
@@ -98,4 +99,4 @@
     </div>
 </p-dialog>
 
-<app-edit-group [(visible)]="editGroupDialog" [group]="group() ?? null" />
+<app-edit-group [(visible)]="editGroupDialog" [group]="group() ?? null" />

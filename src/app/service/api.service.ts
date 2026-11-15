@@ -83,6 +83,34 @@ export class ApiService {
     return id;
   }
 
+  duplicateGroup(id: string): string | undefined {
+    const source = this.getGroup(id);
+    if (!source) return undefined;
+
+    const memberIds = new Map(source.members.map(member => [member.id, uuidv4()]));
+    const duplicate: Group = {
+      ...source,
+      id: uuidv4(),
+      name: `${source.name} (Copy)`,
+      members: source.members.map(member => ({
+        ...member,
+        id: memberIds.get(member.id)!
+      })),
+      expenses: source.expenses.map(expense => ({
+        ...expense,
+        id: uuidv4(),
+        paidBy: memberIds.get(expense.paidBy) ?? expense.paidBy,
+        shares: expense.shares.map(share => ({
+          ...share,
+          id: memberIds.get(share.id) ?? share.id
+        }))
+      }))
+    };
+
+    this._groups.update(groups => [...groups, duplicate]);
+    return duplicate.id;
+  }
+
   updateGroupDetails(id: string, name: string, thumbnail: string): void {
     const trimmed = name.trim();
     this._groups.update(groups =>
