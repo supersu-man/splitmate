@@ -70,6 +70,20 @@ ng serve
 ng build --configuration production
 ```
 
+## Testing
+
+Install dependencies with `npm install --legacy-peer-deps`, then run `npm test`.
+Tests use Angular's Vitest runner with jsdom and run once by default. For watch
+mode, run `npm test -- --watch`.
+
+Component generation now includes a `.spec.ts` file automatically. Existing
+specs cover components only, and test discovery is limited to component specs.
+The Test GitHub Actions workflow runs the unit tests before building the app.
+
+After installing the new test dependencies, commit the updated `package-lock.json`.
+The workflow currently uses `npm install --legacy-peer-deps`; once the lockfile
+is refreshed, this can return to `npm ci --legacy-peer-deps`.
+
 ## Contributing
 Contributions, bug reports, and feature requests are welcome!
 Feel free to open an issue or submit a pull request.
